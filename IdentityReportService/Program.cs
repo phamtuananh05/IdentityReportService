@@ -12,6 +12,10 @@ AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Đọc PORT từ Railway env var, bind app vào đúng port
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
 builder.Services.AddControllers();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<AuditLogService>();
@@ -47,7 +51,8 @@ static string GetConnectionString(IConfiguration config)
 }
 
 builder.Services.AddDbContext<IdentityDbContext>(options =>
-    options.UseNpgsql(GetConnectionString(builder.Configuration)));
+    options.UseNpgsql(GetConnectionString(builder.Configuration))
+           .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
 
 builder.Services.AddScoped<JwtService>();
 
