@@ -41,7 +41,7 @@ static string GetConnectionString(IConfiguration config)
         var host = uri.Host;
         var port = uri.Port;
         var database = uri.AbsolutePath.TrimStart('/');
-        return $"Host={host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true";
+        return $"Host={host};Port={port};Database={database};Username={username};Password={password};Trust Server Certificate=true";
     }
     return config.GetConnectionString("DefaultConnection")!;
 }
