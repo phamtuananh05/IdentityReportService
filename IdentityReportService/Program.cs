@@ -138,16 +138,22 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Tự động apply migration và seed data khi startup
-try
+// Chạy migrate + seed trong background SAU KHI server đã start
+// → HTTP server start ngay lập tức → healthcheck pass
+app.Lifetime.ApplicationStarted.Register(() =>
 {
-    await DataSeeder.SeedAsync(app.Services);
-}
-catch (Exception ex)
-{
-    var logger = app.Services.GetRequiredService<ILogger<Program>>();
-    logger.LogError(ex, "Lỗi khi migrate/seed database");
-    // Không crash app - vẫn tiếp tục chạy
-}
+    Task.Run(async () =>
+    {
+        try
+        {
+            await DataSeeder.SeedAsync(app.Services);
+        }
+        catch (Exception ex)
+        {
+            var logger = app.Services.GetRequiredService<ILogger<Program>>();
+            logger.LogError(ex, "Lỗi khi migrate/seed database");
+        }
+    });
+});
 
 app.Run();
