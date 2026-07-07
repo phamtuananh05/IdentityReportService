@@ -4,6 +4,6 @@ dockerfilePath = "IdentityReportService/Dockerfile"
 
 [deploy]
 startCommand = "dotnet IdentityReportService.dll --urls http://0.0.0.0:$PORT"
-healthcheckPath = "/swagger"
+healthcheckPath = "/healthz"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"

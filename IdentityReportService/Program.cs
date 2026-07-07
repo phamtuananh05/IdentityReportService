@@ -6,6 +6,10 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 
+// Cho phép Npgsql chấp nhận DateTime không có Kind (Unspecified) → tự coi là UTC
+// Tránh lỗi "Cannot write DateTime with Kind=Unspecified to PostgreSQL"
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
@@ -124,6 +128,9 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = "swagger";
 });
 
+// Healthcheck endpoint đơn giản cho Railway
+app.MapGet("/healthz", () => Results.Ok(new { status = "healthy" }));
+
 app.UseCors("AllowAllForDev");
 
 app.UseAuthentication();
@@ -131,13 +138,16 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Tự động apply migration khi startup (quan trọng cho Railway/cloud deploy)
-using (var scope = app.Services.CreateScope())
+// Tự động apply migration và seed data khi startup
+try
 {
-    var db = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
-    db.Database.Migrate();
+    await DataSeeder.SeedAsync(app.Services);
 }
-
-await DataSeeder.SeedAsync(app.Services);
+catch (Exception ex)
+{
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+    logger.LogError(ex, "Lỗi khi migrate/seed database");
+    // Không crash app - vẫn tiếp tục chạy
+}
 
 app.Run();

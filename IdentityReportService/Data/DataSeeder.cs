@@ -1,4 +1,4 @@
-﻿using IdentityReportService.Models;
+using IdentityReportService.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace IdentityReportService.Data;
@@ -57,7 +57,7 @@ public static class DataSeeder
             StudentCode = "SV001",
             Phone = "0987654321",
             Address = "Hà Nội",
-            DateOfBirth = new DateTime(2004, 1, 1)
+            DateOfBirth = new DateTime(2004, 1, 1, 0, 0, 0, DateTimeKind.Utc)
         };
 
         var libraryCard = new LibraryCard
